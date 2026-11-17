@@ -1,0 +1,1222 @@
+/*
+ * Tabstrip: Chrome-style tab groups on Obsidian's own tab bar (steps L4–L5, horizontal strip).
+ *
+ * The plugin only adds classes, data attributes and two kinds of child elements to the
+ * tab headers of the main area and pop-out windows (never sidebars). The only inline values
+ * it writes are custom properties (setCssProps): --tabstrip-chip-slot on a header and the
+ * editor bubble position.
+ */
+
+body {
+	/* Look of the chip and the underline; themes and snippets can override these. */
+	--tabstrip-chip-radius: 6px;
+	--tabstrip-chip-height: 21px;
+	--tabstrip-chip-max-width: 11em;
+	--tabstrip-line-width: 2px;
+	--tabstrip-dot-size: 10px;
+	/* While a dragged tab would join a group (step L7): its underline and the ring around its chip. */
+	--tabstrip-drop-line-width: 4px;
+	--tabstrip-drop-ring-width: 2px;
+}
+
+/*
+ * Group colours (requirements 7.2; Chrome-like look decided 2026-11-09 in the maintainer's palette test).
+ *
+ * Each colour starts from an Obsidian colour variable (grey from --color-base-70), so a theme
+ * that changes those variables changes the groups too. Like Chrome, the fill is then made darker
+ * in light mode (mixed in OKLab towards black: white text) and lighter in dark mode (towards
+ * white: pastel fills, dark text). Yellow and orange stay bright in light mode (dark text).
+ *
+ * The amounts are custom properties; a CSS snippet can tune any of them, for example
+ *   body { --tabstrip-fill-mix-light-green: 40%; --tabstrip-fill-mix-dark-blue: 30%; }
+ * The chip text colour is still picked from the computed fill (src/ui/ink.ts), so every amount
+ * keeps a contrast of at least 4.5:1. The chip, the underline, the dot, the stacked-tab bar and
+ * the swatches all use --tabstrip-group-color.
+ */
+[data-tabstrip-color='grey'] {
+	--tabstrip-group-base: var(--color-base-70);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-grey, 0%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-grey, 25%);
+}
+[data-tabstrip-color='blue'] {
+	--tabstrip-group-base: var(--color-blue);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-blue, 10%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-blue, 40%);
+}
+[data-tabstrip-color='red'] {
+	--tabstrip-group-base: var(--color-red);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-red, 15%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-red, 35%);
+}
+[data-tabstrip-color='yellow'] {
+	--tabstrip-group-base: var(--color-yellow);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-yellow, 0%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-yellow, 0%);
+}
+[data-tabstrip-color='green'] {
+	--tabstrip-group-base: var(--color-green);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-green, 30%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-green, 15%);
+}
+[data-tabstrip-color='pink'] {
+	--tabstrip-group-base: var(--color-pink);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-pink, 12%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-pink, 0%);
+}
+[data-tabstrip-color='purple'] {
+	--tabstrip-group-base: var(--color-purple);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-purple, 10%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-purple, 25%);
+}
+[data-tabstrip-color='cyan'] {
+	--tabstrip-group-base: var(--color-cyan);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-cyan, 32%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-cyan, 0%);
+}
+[data-tabstrip-color='orange'] {
+	--tabstrip-group-base: var(--color-orange);
+	--tabstrip-fill-mix-light: var(--tabstrip-fill-mix-light-orange, 0%);
+	--tabstrip-fill-mix-dark: var(--tabstrip-fill-mix-dark-orange, 15%);
+}
+
+[data-tabstrip-color] { --tabstrip-group-color: var(--tabstrip-group-base); }
+.theme-light [data-tabstrip-color] { --tabstrip-group-color: color-mix(in oklab, var(--tabstrip-group-base), black var(--tabstrip-fill-mix-light)); }
+.theme-dark [data-tabstrip-color] { --tabstrip-group-color: color-mix(in oklab, var(--tabstrip-group-base), white var(--tabstrip-fill-mix-dark)); }
+
+/* Chip text colour, chosen from the computed fill for a contrast of at least 4.5:1 (src/ui/color.ts). */
+:is(.tabstrip-chip, .tabstrip-vgroup-chip)[data-tabstrip-ink='light'] { --tabstrip-chip-ink: #ffffff; }
+:is(.tabstrip-chip, .tabstrip-vgroup-chip)[data-tabstrip-ink='dark'] { --tabstrip-chip-ink: #202124; }
+:is(.tabstrip-chip, .tabstrip-vgroup-chip)[data-tabstrip-ink='black'] { --tabstrip-chip-ink: #000000; }
+
+/* Hidden element used to read the computed group colours. */
+.tabstrip-color-probe {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	visibility: hidden;
+	pointer-events: none;
+	background-color: var(--tabstrip-group-color);
+}
+
+/* ---- chip ---- */
+
+/*
+ * Room for the chip, in the first member's inline-start margin (width measured by the plugin).
+ * !important for this one property: themes set tab margins with selectors far more specific
+ * than this one (Cupertino `margin: auto 0` on every tab, Blue Topaz `margin-left: 1rem` on the
+ * first tab and 12px on every "Safari" tab, Minimal "Modern" 4px), and a lost slot puts the
+ * chip on top of the previous tab or outside the strip's clip. Only horizontal strips: stacked
+ * headers are not in the header container and have no chip room.
+ */
+.workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-has-chip {
+	margin-inline-start: var(--tabstrip-chip-slot, 0px) !important;
+}
+
+/*
+ * The chip sits just before the header's start edge; the header is position: relative. It is
+ * centred on the tab: the header is a flex container, and with no top or bottom the chip's
+ * vertical place is its static position, centred on the header's content box (where the
+ * visible tab is) by align-self. So it follows each theme's tab height and padding.
+ */
+.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip {
+	position: absolute;
+	inset-inline-end: calc(100% + 4px);
+	align-self: center;
+	height: var(--tabstrip-chip-height);
+	max-height: calc(100% - 4px);
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	max-width: var(--tabstrip-chip-max-width);
+	padding: 0 8px;
+	border-radius: var(--tabstrip-chip-radius);
+	background-color: var(--tabstrip-group-color);
+	color: var(--tabstrip-chip-ink, var(--text-on-accent));
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	line-height: 1;
+	white-space: nowrap;
+	cursor: var(--cursor);
+	user-select: none;
+	/* In a frameless window the strip is a window-drag region; the chip must stay clickable. */
+	-webkit-app-region: no-drag;
+}
+
+/* Focus ring in the text colour: at least 3:1 against the strip in every theme (WCAG 1.4.11). */
+.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip:focus-visible {
+	outline: 2px solid var(--text-normal);
+	outline-offset: 1px;
+}
+
+.tabstrip-chip > .tabstrip-chip-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+
+.tabstrip-chip > .tabstrip-chip-dot {
+	display: none;
+}
+
+/* A group without a name shows a small colour dot, like Chrome. */
+.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip.is-unnamed {
+	padding: 0 3px;
+	background-color: transparent;
+}
+
+.tabstrip-chip.is-unnamed > .tabstrip-chip-label {
+	display: none;
+}
+
+.tabstrip-chip.is-unnamed > .tabstrip-chip-dot {
+	display: block;
+	width: var(--tabstrip-dot-size);
+	height: var(--tabstrip-dot-size);
+	border-radius: 50%;
+	background-color: var(--tabstrip-group-color);
+}
+
+/* ---- underline: one segment per member header; together they run unbroken under the whole group ---- */
+
+/* No container in the selector: stacked tabs move their headers out of the header container. */
+.workspace-tab-header.tabstrip-member > .tabstrip-line {
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	height: var(--tabstrip-line-width);
+	z-index: 2;
+	background-color: var(--tabstrip-group-color);
+	pointer-events: none;
+}
+
+/* On the first member it starts under the chip. */
+.workspace-tab-header.tabstrip-has-chip > .tabstrip-line {
+	inset-inline-start: calc(4px - var(--tabstrip-chip-slot, 0px));
+}
+
+/*
+ * ---- underline past the curved feet of the active or hovered tab ----
+ *
+ * Obsidian draws the active tab (and a hovered one) with curved bottom corners, "feet" that
+ * reach --tab-curve into the neighbouring headers and paint over them in the tab's own colour.
+ * Every header is its own stacking context (container-type), and from Obsidian 1.14 the active
+ * header is stacked above the others, so a neighbour's underline cannot be raised above those
+ * feet. Instead:
+ *
+ * 1. Inside a group, every member's underline reaches over its neighbouring members by the
+ *    size of the feet, and by at least 8px: themes put space between tabs (Cupertino a 4px gap
+ *    with no feet at all, Minimal "Modern" 4px, Blue Topaz "Safari" 12px), and two neighbouring
+ *    segments reaching toward each other cover up to 16px. The active or hovered member then
+ *    paints the line over its own feet, and the line stays unbroken.
+ * 2. A tab outside the group that touches a member (the tab after the group's last member,
+ *    the tab before a group's first member) does not paint its feet into the bottom band
+ *    where the group's underline runs, so the line still reaches the group's ends. A collapsed
+ *    group draws no underline, so its neighbours keep their whole feet.
+ *
+ * --tabstrip-line-overlap (default: the feet size, at least 8px) and --tabstrip-flare-cut
+ * (default: the line width) are not set by the plugin; themes and snippets may set them.
+ *
+ * The feet size is read through --tabstrip-curve, a registered <length>: some themes set
+ * --tab-curve to a unitless 0 (Cupertino), which in calc() is a number, not a length, and would
+ * make these insets invalid (the segments would shrink to nothing). As a registered length, a
+ * unitless 0 is 0px, and anything that is not a length is 0px too.
+ */
+@property --tabstrip-curve {
+	syntax: '<length>';
+	inherits: true;
+	initial-value: 0px;
+}
+
+.workspace-tab-header-container .workspace-tab-header {
+	--tabstrip-curve: var(--tab-curve, 0px);
+}
+
+.workspace-tab-header-container .workspace-tab-header.tabstrip-member + .workspace-tab-header.tabstrip-member:not(.tabstrip-has-chip) > .tabstrip-line {
+	inset-inline-start: calc(var(--tabstrip-line-overlap, max(var(--tabstrip-curve), 8px)) * -1);
+}
+
+.workspace-tab-header-container .workspace-tab-header.tabstrip-member:has(+ .workspace-tab-header.tabstrip-member:not(.tabstrip-has-chip)) > .tabstrip-line {
+	inset-inline-end: calc(var(--tabstrip-line-overlap, max(var(--tabstrip-curve), 8px)) * -1);
+}
+
+/*
+ * The left foot is ::before and the right foot ::after, in both writing directions. The clip
+ * keeps the part of the foot that Obsidian shows (the quarter of its box next to the tab,
+ * widened by --tab-curve toward the tab) and only leaves out the bottom band.
+ */
+body:not(.mod-rtl) .workspace-tab-header-container .workspace-tab-header.tabstrip-member:not(.tabstrip-collapsed) + .workspace-tab-header:not(.tabstrip-member)::before,
+body.mod-rtl .workspace-tab-header-container .workspace-tab-header:has(+ .workspace-tab-header.tabstrip-has-chip:not(.tabstrip-collapsed))::before {
+	clip-path: inset(50% calc(var(--tabstrip-curve) * -1) var(--tabstrip-flare-cut, var(--tabstrip-line-width)) 50%);
+}
+
+body:not(.mod-rtl) .workspace-tab-header-container .workspace-tab-header:has(+ .workspace-tab-header.tabstrip-has-chip:not(.tabstrip-collapsed))::after,
+body.mod-rtl .workspace-tab-header-container .workspace-tab-header.tabstrip-member:not(.tabstrip-collapsed) + .workspace-tab-header:not(.tabstrip-member)::after {
+	clip-path: inset(50% 50% var(--tabstrip-flare-cut, var(--tabstrip-line-width)) calc(var(--tabstrip-curve) * -1));
+}
+
+/*
+ * ---- the tab divider before the chip ----
+ *
+ * Obsidian draws the divider between tabs at each tab's end (`.workspace-tab-header-inner::after`),
+ * so the one before a group belongs to the previous tab and sits before the chip. Themes that
+ * draw it at each tab's start (Atom) would put it between the chip and its own tab; the plugin
+ * then marks the chip holder (src/ui/divider.ts) and this moves that one divider back before
+ * the chip by the chip's room. The theme still decides whether it shows.
+ */
+body:not(.mod-rtl) .workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-has-chip.tabstrip-divider-start > .workspace-tab-header-inner::after {
+	translate: calc(var(--tabstrip-chip-slot, 0px) * -1) 0;
+}
+
+body.mod-rtl .workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-has-chip.tabstrip-divider-start > .workspace-tab-header-inner::after {
+	translate: var(--tabstrip-chip-slot, 0px) 0;
+}
+
+/*
+ * ---- collapsed groups (step L5): only the chip shows ----
+ *
+ * Every member header of a collapsed group (`tabstrip-collapsed`) gets width 0 and
+ * visibility: hidden. Never display: none: Obsidian computes the drop position of a dragged tab
+ * from the tab header boxes, and a header without a box sends the drop indicator to the window's
+ * left edge (requirements 7.2). The header stays in the strip with a zero-width box at its place.
+ * !important: Obsidian writes inline flex and width on headers while tabs slide, and themes size
+ * and space tabs with very specific selectors. Horizontal strips only: stacked strips never hide
+ * tabs. The header's contents are taken out (display: none on its inner box's children) so that
+ * nothing of a hidden tab overflows its zero-width box into the strip's scroll width.
+ */
+.workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-collapsed {
+	flex: 0 0 0px !important;
+	width: 0 !important;
+	min-width: 0 !important;
+	max-width: 0 !important;
+	padding-inline: 0 !important;
+	border-inline-width: 0 !important;
+	margin-inline: 0 !important;
+	visibility: hidden;
+}
+
+/*
+ * A zero-width header is still a flex item: a theme that spaces tabs with `gap` (Cupertino) would
+ * leave one gap per hidden member after the chip. Each hidden member after the chip holder takes
+ * its gap back (--tabstrip-strip-gap, the measured column gap, written by src/ui/decorator.ts), so
+ * a collapsed group of any size is followed by one gap, like a one-tab group.
+ */
+.workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-collapsed:not(.tabstrip-has-chip) {
+	margin-inline-start: calc(var(--tabstrip-strip-gap, 0px) * -1) !important;
+}
+
+/* The chip holder keeps the chip's room in front of it (the same !important slot as above). */
+.workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-collapsed.tabstrip-has-chip {
+	margin-inline-start: var(--tabstrip-chip-slot, 0px) !important;
+}
+
+.workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-collapsed > .workspace-tab-header-inner {
+	min-width: 0 !important;
+	max-width: 0 !important;
+	padding-inline: 0 !important;
+}
+
+.workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-collapsed > .workspace-tab-header-inner > * {
+	display: none !important;
+}
+
+/* The chip lives in the first (hidden) member's header: it stays visible and clickable. */
+.workspace-tab-header-container .workspace-tab-header.tabstrip-collapsed > .tabstrip-chip {
+	visibility: visible;
+}
+
+/*
+ * Tab dividers around a collapsed chip. Themes that draw the divider at a tab's start (Atom): the
+ * chip holder's divider stays where L4 put it, before the chip; the divider after the chip is the
+ * next tab's own (the theme hides it next to the active tab). Themes that draw it at a tab's end
+ * (default; the decorator marks those members tabstrip-divider-end): the group's last member draws
+ * it, right after the chip. Either way the chip is set apart from both neighbours like an
+ * expanded group; the theme still decides whether a divider shows.
+ */
+.workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-collapsed.tabstrip-has-chip.tabstrip-divider-start > .workspace-tab-header-inner::after,
+.workspace-tabs:not(.mod-stacked) .workspace-tab-header-container .workspace-tab-header.tabstrip-collapsed.tabstrip-divider-end:not(:has(+ .workspace-tab-header.tabstrip-collapsed:not(.tabstrip-has-chip))) > .workspace-tab-header-inner::after {
+	visibility: visible;
+}
+
+/*
+ * ---- hovering the chip must not look like hovering its tab (L2 side effect) ----
+ *
+ * The chip lives inside its tab's header, so hovering it makes the header :hover too. Nothing
+ * can stop that match, so these rules put back the header's look when not hovered. The values
+ * are Obsidian's own (default theme and themes that keep its tab look, like Atom). Each selector
+ * starts at `.workspace` so it wins over a theme's hover rule of the same weight (theme CSS comes
+ * after plugin CSS): Minimal's "Modern" tabs set the hover fill with six classes.
+ */
+.workspace .workspace-tab-header-container .workspace-tab-header.tabstrip-has-chip:not(.is-active):has(> .tabstrip-chip:hover) {
+	background-color: transparent;
+	box-shadow: none;
+}
+
+.workspace .workspace-split .workspace-tab-header-container .workspace-tab-header.tabstrip-has-chip:not(.is-active):has(> .tabstrip-chip:hover)::before,
+.workspace .workspace-split .workspace-tab-header-container .workspace-tab-header.tabstrip-has-chip:not(.is-active):has(> .tabstrip-chip:hover)::after {
+	box-shadow: none;
+}
+
+.workspace .workspace-tab-header-container .workspace-tab-header.tabstrip-has-chip:not(.is-active):has(> .tabstrip-chip:hover) .workspace-tab-header-inner {
+	background-color: transparent;
+	border-color: var(--tab-inner-border-color);
+}
+
+.workspace .workspace-tabs:not(.mod-stacked) .workspace-tab-header.tabstrip-has-chip:not(.is-active):has(> .tabstrip-chip:hover) .workspace-tab-header-inner-close-button {
+	display: none;
+}
+
+/*
+ * Minimal's "Modern" tabs (body class `tabs-modern`, a Minimal Theme Settings option) outline an
+ * inactive tab only while it is not hovered; give the chip holder that outline back. Other
+ * themes that change a tab's look on hover in their own way are not known here
+ * (found in the maintainer's L4 tests, close-out round 2).
+ */
+.tabs-modern .workspace .mod-root .workspace-tabs:not(.mod-stacked) .workspace-tab-header.tabstrip-has-chip:not(.is-active):not(.mod-active):has(> .tabstrip-chip:hover) .workspace-tab-header-inner {
+	border: 1px solid var(--tab-outline-color);
+}
+
+/* ---- stacked tabs: colour only, no chip (the editor bubble opens beside the first member) ---- */
+/* Stacked headers use a vertical writing mode, so the bar is placed with physical sides. */
+
+.workspace-tabs.mod-stacked .workspace-tab-header > .tabstrip-chip {
+	display: none;
+}
+
+.workspace-tabs.mod-stacked .workspace-tab-header.tabstrip-member > .tabstrip-line,
+.workspace-tabs.mod-stacked .workspace-tab-header.tabstrip-has-chip > .tabstrip-line {
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: auto;
+	width: 3px;
+	height: auto;
+}
+
+/*
+ * ---- drop target while dragging a tab (step L7) ----
+ *
+ * The group the dragged tab would join (or stay in) is emphasised like Chrome: its underline gets
+ * thicker and its chip gets a ring in the group colour, with a gap in the strip's colour so the ring
+ * reads against the chip's own fill. Only classes are toggled (src/ui/drag.ts); they are removed on
+ * drop, dragend, Escape and when the pointer leaves the strip.
+ */
+.workspace-tab-header.tabstrip-member.tabstrip-drop-join > .tabstrip-line {
+	height: var(--tabstrip-drop-line-width);
+}
+
+.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip.is-drop-target {
+	outline: var(--tabstrip-drop-ring-width) solid var(--tabstrip-group-color);
+	outline-offset: 1px;
+}
+
+/* An unnamed group's chip is a dot: the ring goes around the dot. */
+.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip.is-unnamed.is-drop-target {
+	outline: none;
+}
+
+.tabstrip-chip.is-unnamed.is-drop-target > .tabstrip-chip-dot {
+	box-shadow:
+		0 0 0 1px var(--background-secondary),
+		0 0 0 calc(1px + var(--tabstrip-drop-ring-width)) var(--tabstrip-group-color);
+}
+
+/* ---- swatches (editor bubble and chip menu) ---- */
+
+.tabstrip-swatch {
+	display: inline-block;
+	flex: none;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background-color: var(--tabstrip-group-color);
+	cursor: var(--cursor);
+}
+
+.tabstrip-menu-swatch {
+	width: 12px;
+	height: 12px;
+	margin-inline-end: 8px;
+	vertical-align: -1px;
+	cursor: inherit;
+}
+
+/* ---- editor bubble ---- */
+
+.tabstrip-editor {
+	position: fixed;
+	left: var(--tabstrip-editor-left, 0px);
+	top: var(--tabstrip-editor-top, 0px);
+	z-index: var(--layer-menu);
+	box-sizing: border-box;
+	width: 248px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background-color: var(--background-primary);
+	box-shadow: var(--shadow-s);
+	-webkit-app-region: no-drag;
+}
+
+.tabstrip-editor .tabstrip-editor-input {
+	width: 100%;
+}
+
+.tabstrip-editor-colors {
+	display: flex;
+	justify-content: space-between;
+}
+
+.tabstrip-editor .tabstrip-swatch {
+	box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 2px transparent;
+}
+
+.tabstrip-editor .tabstrip-swatch.is-selected {
+	box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 4px var(--tabstrip-group-color);
+}
+
+/*
+ * Keyboard focus on a swatch: a ring in the text colour (at least 3:1 against the bubble in every
+ * theme, WCAG 1.4.11) in the 2px band right around the swatch, where the selected swatch has its
+ * gap. So it never reaches past the selection ring (4px) into the 7–8px between swatches.
+ *
+ * The ring has the bubble colour on both sides, never the swatch colour: the Chrome-like fills
+ * can be close to the text colour (a dark-mode pastel next to light text, a dark light-mode fill
+ * next to dark text). Inside, the swatch's outer 1px is painted in the bubble colour; outside a
+ * selected swatch, 1px of bubble colour separates the ring from a 1px ring in the swatch colour,
+ * so a focused, selected swatch still shows both.
+ */
+.tabstrip-editor .tabstrip-swatch:focus-visible {
+	outline: none;
+	box-shadow: inset 0 0 0 1px var(--background-primary), 0 0 0 2px var(--text-normal), 0 0 0 2px transparent;
+}
+
+.tabstrip-editor .tabstrip-swatch.is-selected:focus-visible {
+	box-shadow:
+		inset 0 0 0 1px var(--background-primary),
+		0 0 0 2px var(--text-normal),
+		0 0 0 3px var(--background-primary),
+		0 0 0 4px var(--tabstrip-group-color);
+}
+
+/*
+ * ---- high contrast (forced colours, e.g. a Windows contrast theme; requirements 5.6) ----
+ *
+ * The browser would force every fill to the strip's own background colour: no underline, no
+ * dot, no chip outline. Groups must stay visible and apart without colour: the underline and the
+ * dot are drawn in the text colour, a named chip gets an outline, and adjacent groups' lines
+ * keep their 4px gap at the chip.
+ */
+@media (forced-colors: active) {
+	.workspace-tab-header.tabstrip-member > .tabstrip-line,
+	.tabstrip-chip.is-unnamed > .tabstrip-chip-dot {
+		forced-color-adjust: none;
+		background-color: CanvasText;
+	}
+
+	.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip:not(.is-unnamed) {
+		border: 1px solid CanvasText;
+	}
+
+	.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip:focus-visible {
+		outline-color: Highlight;
+	}
+
+	/* Swatches keep their colours (each has its colour name) and get an outline; the chosen one a ring. */
+	.tabstrip-swatch {
+		forced-color-adjust: none;
+		border: 1px solid CanvasText;
+	}
+
+	.tabstrip-editor .tabstrip-swatch.is-selected {
+		outline: 2px solid Highlight;
+		outline-offset: 2px;
+	}
+
+	/* Swatches keep author colours (forced-color-adjust: none), so the focus ring uses a system colour. */
+	.tabstrip-editor .tabstrip-swatch:focus-visible,
+	.tabstrip-editor .tabstrip-swatch.is-selected:focus-visible {
+		box-shadow: 0 0 0 2px CanvasText;
+	}
+
+	/*
+	 * A collapsed group (step L5) has no underline, and without colour all chips look alike: a
+	 * collapsed named chip gets a dashed 2px outline instead of the solid 1px one, a collapsed
+	 * unnamed group a ring instead of a filled dot. The thicker border makes the chip 2px wider;
+	 * it also makes the content box of the fixed-height chip shorter, so the decorator's resize
+	 * observer measures the slot again and the 4px gaps stay.
+	 */
+	.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip.is-collapsed:not(.is-unnamed) {
+		border: 2px dashed CanvasText;
+	}
+
+	/*
+	 * The drop target (step L7): the system highlight colour for its underline and chip ring. The
+	 * chip keeps forced-color-adjust: auto, so its fill and text stay the forced Canvas / CanvasText
+	 * they have when not highlighted (the outline is a system colour already). The unnamed chip's
+	 * ring goes around the chip like a named one; the dot loses its group-colour ring here.
+	 */
+	.workspace-tab-header.tabstrip-member.tabstrip-drop-join > .tabstrip-line {
+		background-color: Highlight;
+	}
+
+	.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip.is-drop-target,
+	.workspace-tab-header-container .workspace-tab-header > .tabstrip-chip.is-unnamed.is-drop-target {
+		outline: var(--tabstrip-drop-ring-width) solid Highlight;
+		outline-offset: 1px;
+	}
+
+	.tabstrip-chip.is-unnamed.is-drop-target > .tabstrip-chip-dot {
+		box-shadow: none;
+	}
+
+	.tabstrip-chip.is-unnamed.is-collapsed > .tabstrip-chip-dot {
+		box-sizing: border-box;
+		border: 2px solid CanvasText;
+		background-color: Canvas;
+	}
+}
+
+/*
+ * Vertical tab strip (step V1, experimental). The strip is the first child of the main window's
+ * .workspace (never a sidebar view), which then carries .tabstrip-vertical. Pop-out windows keep
+ * their horizontal tab bar: the class is only on the main window's .workspace, not on <body>
+ * (Obsidian copies body classes into pop-outs).
+ */
+body {
+	/* Marker: this stylesheet is applied (the strip waits for it before it mounts; src/ui/vstrip.ts). */
+	--tabstrip-styles: 1;
+	--tabstrip-vstrip-width: 240px;
+	--tabstrip-vrow-height: 30px;
+	--tabstrip-vrow-bar-width: 3px;
+	/* Step V3: the icon bar, the edge handle, member indent, and the bar's layer while it opens over the workspace. */
+	--tabstrip-vstrip-collapsed-width: 48px;
+	--tabstrip-vstrip-handle-width: 6px;
+	--tabstrip-vrow-indent: 10px;
+	--tabstrip-vstrip-layer: 20;
+	/*
+	 * Room for the macOS traffic lights with the hidden frame: Obsidian's own 80px (its --frame-left-space
+	 * plus the ribbon width it subtracts there) plus 4px, never less than 84px. Obsidian 1.13 does not
+	 * expose the ribbon part where the strip can read it, so the sum alone came out at 40px there
+	 * when the ribbon is shown (V2 matrix run).
+	 */
+	--tabstrip-traffic-room: max(84px, calc(var(--frame-left-space, 0px) + var(--frame-ribbon-left, 0px) + var(--size-4-1, 4px)));
+}
+
+/* The native tab header rows of the root split: hidden, never removed (the tab model is untouched). */
+.workspace.tabstrip-vertical > .workspace-split.mod-root .workspace-tabs > .workspace-tab-header-container {
+	display: none;
+}
+
+.tabstrip-vstrip {
+	position: relative;
+	flex: 0 0 var(--tabstrip-vstrip-width);
+	width: var(--tabstrip-vstrip-width);
+	height: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+	-webkit-app-region: no-drag;
+}
+
+/* Everything visible of the strip; in the icon bar it is the part that opens over the workspace. */
+.tabstrip-vstrip-panel {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	min-width: 0;
+	overflow: hidden;
+	box-sizing: border-box;
+	background-color: var(--background-secondary);
+	/*
+	 * Review round 1: the border colour, not the divider colour. Some themes (Atom) make the divider
+	 * transparent and keep the sidebar apart by its background, but the strip and the file list share
+	 * that background, so the strip needs a line of its own.
+	 */
+	border-inline-end: var(--divider-width, 1px) solid var(--background-modifier-border);
+}
+
+.tabstrip-vstrip-header {
+	flex: 0 0 auto;
+	height: var(--header-height, 40px);
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-1, 2px);
+	padding: 0 var(--size-4-2, 8px);
+	background-color: var(--titlebar-background, var(--background-secondary));
+	border-bottom: var(--tab-outline-width, 1px) solid var(--tab-outline-color, var(--divider-color));
+}
+
+/*
+ * Hidden window frame (Obsidian's default on macOS, the user's setting): the strip owns the top-left
+ * corner of the window. On macOS its header keeps the traffic lights' room free (Obsidian's own
+ * --frame-left-space plus the ribbon width it subtracts there: 80px); with any hidden frame the
+ * empty part of the header drags the window. Buttons in it are no-drag.
+ */
+body.mod-macos:not(.mod-system-rtl).is-hidden-frameless:not(.is-fullscreen) .tabstrip-vstrip-header {
+	padding-inline-start: var(--tabstrip-traffic-room);
+}
+/* app-region is not inherited: the spacer that fills the header's empty part says so itself. */
+body.is-hidden-frameless:not(.is-grabbing):not(.is-fullscreen) .tabstrip-vstrip-header,
+body.is-hidden-frameless:not(.is-grabbing):not(.is-fullscreen) .tabstrip-vstrip-drag {
+	-webkit-app-region: drag;
+}
+
+.tabstrip-vstrip-drag {
+	flex: 1 1 auto;
+	align-self: stretch;
+}
+
+.tabstrip-vstrip-toggle,
+.tabstrip-vstrip-collapse {
+	-webkit-app-region: no-drag;
+	flex: 0 0 auto;
+}
+
+.tabstrip-vstrip-list {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: var(--size-4-1, 4px) var(--size-4-1, 4px) var(--size-4-2, 8px);
+	-webkit-app-region: no-drag;
+}
+
+/*
+ * ---- sections (step V2): the pinned area, then one per pane; a title only with more than one pane ----
+ * Review round 2: the separators use the border colour, not the divider colour (Atom's is transparent).
+ */
+
+.tabstrip-vsection.mod-pinned {
+	padding-bottom: var(--size-4-1, 4px);
+	margin-bottom: var(--size-4-1, 4px);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+.tabstrip-vsection.mod-pane + .tabstrip-vsection.mod-pane {
+	margin-top: var(--size-4-2, 8px);
+	padding-top: var(--size-4-1, 4px);
+	border-top: 1px solid var(--background-modifier-border);
+}
+.tabstrip-vpane-title {
+	display: none;
+}
+.tabstrip-vsection.is-titled > .tabstrip-vpane-title {
+	display: block;
+	padding: var(--size-4-1, 4px) var(--size-4-2, 8px) var(--size-2-1, 2px);
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	user-select: none;
+}
+
+/* ---- rows: tabs, group rows, "New tab" ---- */
+
+.tabstrip-vrow,
+.tabstrip-vgroup,
+.tabstrip-vnew {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2, 8px);
+	height: var(--tabstrip-vrow-height);
+	padding: 0 var(--size-4-1, 4px) 0 calc(var(--size-4-2, 8px) + var(--tabstrip-vrow-bar-width));
+	border-radius: var(--radius-s, 4px);
+	color: var(--nav-item-color, var(--text-muted));
+	font-size: var(--nav-item-size, var(--font-ui-small));
+	cursor: var(--cursor, default);
+	user-select: none;
+	white-space: nowrap;
+	-webkit-app-region: no-drag;
+}
+.tabstrip-vrow.is-member {
+	padding-inline-start: calc(var(--size-4-2, 8px) + var(--tabstrip-vrow-bar-width) + var(--tabstrip-vrow-indent));
+}
+/*
+ * Review round 1: hover is lighter than the highlighted row. Many themes (the default one too) give
+ * both the same nav colours, which made a hovered row look like a second highlighted one.
+ */
+@media (hover: hover) {
+	.tabstrip-vrow:hover,
+	.tabstrip-vgroup:hover,
+	.tabstrip-vnew:hover {
+		background-color: color-mix(in srgb, var(--nav-item-background-hover, var(--background-modifier-hover)) 55%, transparent);
+		color: var(--nav-item-color-hover, var(--text-normal));
+	}
+}
+.tabstrip-vrow.is-current {
+	color: var(--nav-item-color-active, var(--text-normal));
+}
+.tabstrip-vrow.is-active,
+.tabstrip-vrow.is-active:hover {
+	background-color: var(--nav-item-background-active, var(--background-modifier-active-hover));
+	color: var(--nav-item-color-active, var(--text-normal));
+}
+/* The highlighted row's own cue, whatever the theme's nav colours: a semibold title and a thin ring. */
+.tabstrip-vrow.is-active .tabstrip-vrow-title {
+	font-weight: var(--font-semibold, 600);
+}
+.tabstrip-vrow.is-active:not(:focus-visible) {
+	box-shadow: inset 0 0 0 1px var(--background-modifier-border-hover, var(--background-modifier-border));
+}
+/* Visible keyboard focus in the text colour (at least 3:1 on the strip in every theme). */
+.tabstrip-vrow:focus-visible,
+.tabstrip-vgroup:focus-visible,
+.tabstrip-vnew:focus-visible,
+.tabstrip-vstrip-resize:focus-visible {
+	outline: 2px solid var(--text-normal);
+	outline-offset: -2px;
+}
+.tabstrip-vrow:focus:not(.is-active),
+.tabstrip-vgroup:focus,
+.tabstrip-vnew:focus {
+	box-shadow: none;
+}
+
+.tabstrip-vrow-icon {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	--icon-size: var(--icon-s, 16px);
+	--icon-stroke: var(--icon-s-stroke-width, 2px);
+	color: var(--icon-color, currentColor);
+}
+/*
+ * Review round 3: on the active row the icon takes the row's text colour (the active nav colour), so
+ * it stays as readable as the title on a strong active background (Atom). The muted icon colour or
+ * the accent colour can disappear there.
+ */
+.tabstrip-vrow.is-active .tabstrip-vrow-icon {
+	color: inherit;
+}
+.tabstrip-vrow-icon:empty {
+	display: none;
+}
+.tabstrip-vrow-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* Not loaded yet (Obsidian's deferred tabs, read from the public isDeferred): greyed. */
+.tabstrip-vrow.is-deferred:not(.is-active) .tabstrip-vrow-title,
+.tabstrip-vrow.is-deferred:not(.is-active) .tabstrip-vrow-icon {
+	color: var(--text-faint);
+	font-style: italic;
+}
+
+/* Close button at the row end: on hover, on the highlighted row and while the row has the focus; never on pinned tabs. */
+.tabstrip-vrow-close {
+	flex: 0 0 auto;
+	display: none;
+	padding: var(--size-2-1, 2px);
+	--icon-size: var(--icon-xs, 14px);
+	-webkit-app-region: no-drag;
+}
+.tabstrip-vrow.is-active > .tabstrip-vrow-close,
+.tabstrip-vrow:focus-within > .tabstrip-vrow-close {
+	display: flex;
+}
+@media (hover: hover) {
+	.tabstrip-vrow:hover > .tabstrip-vrow-close {
+		display: flex;
+	}
+}
+.tabstrip-vrow.is-pinned > .tabstrip-vrow-close {
+	display: none;
+}
+/*
+ * Review round 3: on the highlighted row the close button takes the row's text colour at full
+ * opacity, resting and hovered, like the leading icon: the muted icon colour nearly vanished on a
+ * strong active background (Atom's accent blue).
+ */
+.tabstrip-vrow.is-active > .tabstrip-vrow-close,
+.tabstrip-vrow.is-active > .tabstrip-vrow-close:hover {
+	color: inherit;
+	opacity: 1;
+}
+
+/* Group colour bar on member rows. */
+.tabstrip-vrow[data-tabstrip-color]::before {
+	content: '';
+	position: absolute;
+	inset-inline-start: 2px;
+	top: 5px;
+	bottom: 5px;
+	width: var(--tabstrip-vrow-bar-width);
+	border-radius: var(--tabstrip-vrow-bar-width);
+	background-color: var(--tabstrip-group-color);
+}
+
+/* Group row (step V2): arrow, the group's chip (name and colour as on the horizontal strip), member count. */
+.tabstrip-vgroup {
+	gap: var(--size-4-1, 4px);
+	padding-inline-start: var(--size-4-1, 4px);
+}
+.tabstrip-vgroup-arrow {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	--icon-size: var(--icon-xs, 14px);
+	color: var(--icon-color, currentColor);
+}
+.tabstrip-vgroup-chip {
+	flex: 0 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	height: var(--tabstrip-chip-height);
+	padding: 0 8px;
+	border-radius: var(--tabstrip-chip-radius);
+	background-color: var(--tabstrip-group-color);
+	color: var(--tabstrip-chip-ink, var(--text-on-accent));
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	line-height: 1;
+}
+.tabstrip-vgroup-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+/* A group without a name: a colour dot and the colour's group name in the muted text colour. */
+.tabstrip-vgroup-chip.is-unnamed {
+	gap: 6px;
+	padding: 0 2px;
+	background-color: transparent;
+	color: var(--text-muted);
+	font-weight: var(--font-normal);
+}
+.tabstrip-vgroup-chip.is-unnamed::before {
+	content: '';
+	flex: 0 0 auto;
+	width: var(--tabstrip-dot-size);
+	height: var(--tabstrip-dot-size);
+	border-radius: 50%;
+	background-color: var(--tabstrip-group-color);
+}
+.tabstrip-vgroup-count {
+	flex: 0 0 auto;
+	margin-inline-start: auto;
+	padding: 0 var(--size-4-1, 4px);
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	font-variant-numeric: tabular-nums;
+}
+
+.tabstrip-vnew {
+	color: var(--text-faint);
+}
+
+/* ---- edge handle (step V3): drag to resize the expanded strip ---- */
+
+.tabstrip-vstrip-resize {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	inset-inline-end: 0;
+	width: var(--tabstrip-vstrip-handle-width);
+	z-index: 2;
+	cursor: col-resize;
+	-webkit-app-region: no-drag;
+}
+.tabstrip-vstrip-resize::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	inset-inline-end: 0;
+	width: 2px;
+	background-color: transparent;
+}
+.tabstrip-vstrip-resize:hover::after,
+.tabstrip-vstrip.is-resizing > .tabstrip-vstrip-resize::after {
+	background-color: var(--interactive-accent);
+}
+.tabstrip-vstrip.is-resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+
+/* ---- icon bar (step V3): about 48px, icons and group markers only; hover opens it over the workspace ---- */
+
+.tabstrip-vstrip.is-collapsed {
+	flex-basis: var(--tabstrip-vstrip-collapsed-width);
+	width: var(--tabstrip-vstrip-collapsed-width);
+	/* Above the sidebar and the editor while it opens as an overlay; its own box keeps the bar's width. */
+	z-index: var(--tabstrip-vstrip-layer);
+}
+.tabstrip-vstrip.is-collapsed > .tabstrip-vstrip-resize {
+	display: none;
+}
+.tabstrip-vstrip.is-collapsed > .tabstrip-vstrip-panel {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	inset-inline-start: 0;
+	width: var(--tabstrip-vstrip-collapsed-width);
+}
+.tabstrip-vstrip.is-collapsed.is-peek > .tabstrip-vstrip-panel {
+	width: var(--tabstrip-vstrip-width);
+	box-shadow: var(--shadow-l, 0 4px 16px rgba(0, 0, 0, 0.2));
+}
+@media (prefers-reduced-motion: no-preference) {
+	.tabstrip-vstrip.is-collapsed > .tabstrip-vstrip-panel {
+		transition: width 120ms ease-out;
+	}
+}
+
+/*
+ * Header of the bar: the buttons in a column (on macOS with the hidden frame, under the traffic lights' band).
+ * Review round 2: the hover overlay keeps this header (the column stays in the bar's 48px, the rest of
+ * the header is empty and drags the window), so the list does not move up when the overlay opens and
+ * the row under the pointer stays the same. Only the width changes.
+ */
+.tabstrip-vstrip.is-collapsed .tabstrip-vstrip-header {
+	/* One column of the bar's width at the start, whatever the panel's width (also while it animates). */
+	display: grid;
+	grid-template-columns: var(--tabstrip-vstrip-collapsed-width);
+	justify-content: start;
+	justify-items: center;
+	height: auto;
+	padding: var(--size-4-1, 4px) 0;
+	row-gap: var(--size-4-1, 4px);
+}
+body.mod-macos.is-hidden-frameless:not(.is-fullscreen) .tabstrip-vstrip.is-collapsed .tabstrip-vstrip-header {
+	padding-top: var(--header-height, 40px);
+	padding-inline-start: 0;
+}
+.tabstrip-vstrip.is-collapsed .tabstrip-vstrip-drag {
+	display: none;
+}
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vstrip-list {
+	padding-inline: var(--size-4-1, 4px);
+	scrollbar-width: none;
+}
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vrow,
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vnew {
+	justify-content: center;
+	padding: 0;
+}
+.tabstrip-vstrip.is-collapsed:not(.is-peek) :is(.tabstrip-vrow-title, .tabstrip-vrow-close, .tabstrip-vgroup-arrow, .tabstrip-vgroup-count, .tabstrip-vgroup-label) {
+	display: none;
+}
+/* A pane title keeps its height in the bar (review round 2: rows do not move when the overlay opens). */
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vpane-title {
+	visibility: hidden;
+}
+/* A tab without an icon keeps a mark in the bar. */
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vrow-icon:empty {
+	display: block;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background-color: currentColor;
+}
+/* A group is a coloured marker (in a full-height row, as in the overlay); a collapsed group's marker is hollow. */
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vgroup {
+	justify-content: center;
+	padding: 0;
+}
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vgroup-chip,
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vgroup-chip.is-unnamed {
+	width: 24px;
+	height: 6px;
+	padding: 0;
+	border-radius: 3px;
+	background-color: var(--tabstrip-group-color);
+}
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vgroup-chip.is-unnamed::before {
+	display: none;
+}
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vgroup.is-collapsed > .tabstrip-vgroup-chip {
+	background-color: transparent;
+	box-shadow: inset 0 0 0 2px var(--tabstrip-group-color);
+}
+
+/*
+ * Hidden frame on macOS with the icon bar: the traffic lights (about 14-68px from the left) are wider
+ * than the bar, so whatever sits right of the bar at the top keeps the rest of their room free: the
+ * left sidebar's top tab header or, with the left sidebar closed, the top-left pane's view header.
+ */
+body.mod-macos:not(.mod-system-rtl).is-hidden-frameless:not(.is-fullscreen) .workspace.tabstrip-vertical:has(> .tabstrip-vstrip.is-collapsed) > .mod-left-split .workspace-tabs.mod-top-left-space .workspace-tab-header-container,
+body.mod-macos:not(.mod-system-rtl).is-hidden-frameless:not(.is-fullscreen) .workspace.tabstrip-vertical:has(> .tabstrip-vstrip.is-collapsed) > .workspace-split.mod-root .workspace-tabs.mod-top-left-space .view-header {
+	padding-inline-start: max(var(--size-4-2, 8px), calc(var(--tabstrip-traffic-room) - var(--tabstrip-vstrip-collapsed-width)));
+}
+
+/* Stacked tabs in vertical mode (V1 review note): their spines are tab headers too, so they hide with the header rows. */
+.workspace.tabstrip-vertical > .workspace-split.mod-root .workspace-tabs.mod-stacked .workspace-tab-container > .workspace-tab-header {
+	display: none;
+}
+
+/*
+ * Step V6: while a drag is open (a row of the strip, or since review round 2 any other drag: a tab of a
+ * sidebar or a pop-out, a note from the file explorer), the hidden tab header row of a stacked pane
+ * gets its box back: one header row high at the top of the pane, where the row sits on the horizontal
+ * tab bar, invisible and never hit (no paint, no pointer, no window drag region). Obsidian's drop code
+ * allows a left / right split of a stacked pane only with the pointer inside that row's box, and a top
+ * split only in the top third of that box; with the row hidden (display: none) it had no box and stacked
+ * panes could not be split to the side. Review round 2: the box is one row high, not the whole pane, so
+ * the drop zones match the horizontal tab bar (a box over the whole pane made its top third a top split
+ * and left only the middle ninth for joining the stack). Otherwise the row stays display: none.
+ */
+.workspace.tabstrip-vertical:is(.tabstrip-vdragging, .tabstrip-vdrag-any) > .workspace-split.mod-root .workspace-tabs.mod-stacked > .workspace-tab-header-container {
+	display: flex;
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline: 0;
+	inset-block-end: auto;
+	height: var(--header-height, 40px);
+	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
+	-webkit-app-region: no-drag;
+}
+
+.workspace.tabstrip-vertical:is(.tabstrip-vdragging, .tabstrip-vdrag-any) > .workspace-split.mod-root .workspace-tabs.mod-stacked > .workspace-tab-header-container *,
+.workspace.tabstrip-vertical:is(.tabstrip-vdragging, .tabstrip-vdrag-any) > .workspace-split.mod-root .workspace-tabs.mod-stacked > .workspace-tab-header-container::before,
+.workspace.tabstrip-vertical:is(.tabstrip-vdragging, .tabstrip-vdrag-any) > .workspace-split.mod-root .workspace-tabs.mod-stacked > .workspace-tab-header-container::after {
+	visibility: hidden !important;
+	pointer-events: none !important;
+	-webkit-app-region: no-drag !important;
+}
+
+@media (forced-colors: active) {
+	.tabstrip-vrow[data-tabstrip-color]::before,
+	.tabstrip-vgroup-chip.is-unnamed::before {
+		background-color: CanvasText;
+	}
+	.tabstrip-vrow.is-active {
+		outline: 1px solid Highlight;
+	}
+	.tabstrip-vrow:focus-visible,
+	.tabstrip-vgroup:focus-visible,
+	.tabstrip-vnew:focus-visible,
+	.tabstrip-vstrip-resize:focus-visible {
+		outline: 2px solid Highlight;
+	}
+	/* Groups are not told apart by colour alone: the chip gets an outline and keeps its name. */
+	.tabstrip-vgroup-chip {
+		outline: 1px solid CanvasText;
+	}
+	.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vgroup-chip,
+	.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vgroup-chip.is-unnamed {
+		background-color: CanvasText;
+	}
+	.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vgroup.is-collapsed > .tabstrip-vgroup-chip {
+		background-color: Canvas;
+		box-shadow: none;
+	}
+	.tabstrip-vrow.is-deferred:not(.is-active) .tabstrip-vrow-title {
+		color: GrayText;
+	}
+	.tabstrip-vstrip-resize:hover::after,
+	.tabstrip-vstrip.is-resizing > .tabstrip-vstrip-resize::after {
+		background-color: Highlight;
+	}
+}
+
+/*
+ * The strip now owns the top-left corner, so the left sidebar no longer needs the traffic lights'
+ * room in its header (Obsidian adds it to the left-most top tab header).
+ */
+body.is-hidden-frameless:not(.is-fullscreen) .workspace.tabstrip-vertical > .mod-left-split .workspace-tabs.mod-top-left-space .workspace-tab-header-container {
+	padding-inline-start: var(--size-4-2, 8px);
+}
+
+/*
+ * Windows and Linux with the hidden frame: the window buttons sit over the top-right corner. With
+ * the root tab headers hidden, keep the top-right pane's view header clear of them. (Not tested on
+ * Windows yet: checkpoint 2.)
+ */
+body.is-hidden-frameless:not(.is-fullscreen):not(.mod-macos) .workspace.tabstrip-vertical .workspace-tabs.mod-top-right-space .view-header {
+	padding-inline-end: var(--frame-right-space, 0px);
+}
+
+/*
+ * ---- drag in the vertical strip (step V5) ----
+ * The drop line: one element of the strip, moved with a custom property (no layout change); the
+ * rows of the group the dragged tab would join get the group's colour as a light background, a
+ * wider colour bar and a ring around the chip (like the horizontal strip's highlight).
+ */
+.tabstrip-vdrop-line {
+	position: absolute;
+	z-index: calc(var(--tabstrip-vstrip-layer) + 1);
+	top: calc(var(--tabstrip-vdrop-y, 0px) - 1px);
+	inset-inline-start: var(--size-4-1, 4px);
+	inset-inline-end: var(--size-4-1, 4px);
+	height: 2px;
+	border-radius: 1px;
+	background-color: var(--interactive-accent);
+	pointer-events: none;
+	display: none;
+}
+.tabstrip-vdrop-line.is-shown {
+	display: block;
+}
+.tabstrip-vdrop-line.is-member {
+	inset-inline-start: calc(var(--size-4-1, 4px) + var(--tabstrip-vrow-indent) + var(--size-4-2, 8px));
+}
+.tabstrip-vstrip.is-collapsed:not(.is-peek) .tabstrip-vdrop-line.is-member {
+	inset-inline-start: var(--size-4-1, 4px);
+}
+.tabstrip-vrow.tabstrip-vdrop-join,
+.tabstrip-vgroup.tabstrip-vdrop-join {
+	background-color: color-mix(in srgb, var(--tabstrip-group-color) 16%, transparent);
+}
+.tabstrip-vrow.tabstrip-vdrop-join[data-tabstrip-color]::before {
+	inset-inline-start: 1px;
+	width: calc(var(--tabstrip-vrow-bar-width) + 2px);
+}
+.tabstrip-vgroup.tabstrip-vdrop-join > .tabstrip-vgroup-chip {
+	box-shadow: 0 0 0 2px var(--background-secondary), 0 0 0 4px var(--tabstrip-group-color);
+}
+/* The dragged row stays where it is, dimmed, until the drop. */
+.tabstrip-vrow.is-dragging {
+	opacity: 0.5;
+}
+/* An icon bar that was open when the drag started stays open in place for the drag (not over the workspace). */
+.tabstrip-vstrip.is-collapsed.is-drag-open {
+	flex-basis: var(--tabstrip-vstrip-width);
+	width: var(--tabstrip-vstrip-width);
+}
+.tabstrip-vstrip.is-collapsed.is-drag-open > .tabstrip-vstrip-panel {
+	box-shadow: none;
+	transition: none;
+}
+/*
+ * Forced colours: the joined rows get a Highlight outline; the drop line must not merge with it where
+ * it sits between two outlined rows (V5 review round 1). It is a thicker CanvasText bar framed by
+ * Canvas, so it reads as a gap with a bar across the outlines. The chip's ring (a box-shadow, dropped
+ * in this mode) becomes an outline.
+ */
+@media (forced-colors: active) {
+	.tabstrip-vdrop-line {
+		forced-color-adjust: none;
+		box-sizing: content-box;
+		top: calc(var(--tabstrip-vdrop-y, 0px) - 4px);
+		height: 4px;
+		border-radius: 0;
+		border-block: 2px solid Canvas;
+		background-color: CanvasText;
+	}
+	.tabstrip-vrow.tabstrip-vdrop-join,
+	.tabstrip-vgroup.tabstrip-vdrop-join {
+		outline: 2px solid Highlight;
+		outline-offset: -2px;
+	}
+	.tabstrip-vgroup.tabstrip-vdrop-join > .tabstrip-vgroup-chip {
+		outline: 2px solid Highlight;
+		outline-offset: 1px;
+	}
+}

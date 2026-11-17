@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"module": "ESNext",
+		"target": "ES2022",
+		"moduleResolution": "bundler",
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"skipLibCheck": true,
+		"noEmit": true,
+		"allowJs": true,
+		"checkJs": false,
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"types": ["node", "@wdio/globals/types", "@wdio/mocha-framework", "wdio-obsidian-service"]
+	},
+	"include": ["./**/*.ts", "./plugins/**/*.js"]
+}

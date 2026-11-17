@@ -1,0 +1,9 @@
+{
+	"id": "tabstrip-try-seed",
+	"name": "Tabstrip try seed",
+	"version": "0.0.1",
+	"minAppVersion": "1.0.0",
+	"description": "Development only (npm run try -- --vertical). Opens a few notes, makes a few tab groups and switches Tabstrip to vertical tabs, once per sandbox vault.",
+	"author": "huzibo-yyds",
+	"isDesktopOnly": true
+}

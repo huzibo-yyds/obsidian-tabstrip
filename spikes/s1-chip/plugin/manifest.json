@@ -1,0 +1,9 @@
+{
+	"id": "tabstrip-spike-s1",
+	"name": "Tabstrip spike S1 (group chip)",
+	"version": "0.0.1",
+	"minAppVersion": "1.13.0",
+	"description": "Test-only throwaway spike. Puts a group chip inside the first member tab header to test whether it survives native tab header refreshes.",
+	"author": "huzibo-yyds",
+	"isDesktopOnly": true
+}

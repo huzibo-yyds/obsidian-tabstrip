@@ -1,0 +1,59 @@
+{
+	"name": "obsidian-tabstrip",
+	"version": "0.2.0",
+	"description": "Group tabs into named, colored, collapsible groups like browser tab groups, with an optional vertical tab strip.",
+	"main": "main.js",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"dev": "node esbuild.config.mjs",
+		"lint": "eslint .",
+		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"check": "npm run build && npm run lint && npm run test",
+		"guard:self-test": "node scripts/check-host.mjs self-test",
+		"e2e": "npm run build && node scripts/e2e.mjs",
+		"e2e:matrix": "npm run build && node scripts/e2e.mjs --matrix",
+		"try": "npm run build && node scripts/try.mjs",
+		"spike:s1:build": "tsc -p spikes/s1-chip/plugin/tsconfig.json && tsc -p spikes/s1-chip/tsconfig.json && node spikes/s1-chip/build.mjs",
+		"spike:s1": "npm run spike:s1:build && node scripts/e2e.mjs --config spikes/s1-chip/wdio.conf.mts",
+		"spike:s1:matrix": "npm run spike:s1:build && node scripts/e2e.mjs --matrix --config spikes/s1-chip/wdio.conf.mts",
+		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	},
+	"keywords": [
+		"obsidian",
+		"obsidian-plugin",
+		"tabs",
+		"tab-groups"
+	],
+	"author": "huzibo-yyds",
+	"license": "MIT",
+	"engines": {
+		"node": ">=22.12.0"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.39.5",
+		"@types/mocha": "^10.0.10",
+		"@types/node": "^22.15.17",
+		"@vitest/coverage-v8": "^5.1.0",
+		"@wdio/cli": "^9.33.1",
+		"@wdio/globals": "^9.33.1",
+		"@wdio/local-runner": "^9.33.1",
+		"@wdio/mocha-framework": "^9.33.1",
+		"esbuild": "0.28.2",
+		"eslint": "^9.39.5",
+		"eslint-plugin-obsidianmd": "~0.5.1",
+		"fast-check": "^4.10.2",
+		"globals": "^17.14.0",
+		"jiti": "^2.7.0",
+		"obsidian": "1.14.4",
+		"obsidian-launcher": "3.5.0",
+		"typescript": "~6.0.3",
+		"typescript-eslint": "^8.72.1",
+		"vitest": "^5.1.0",
+		"wdio-obsidian-reporter": "^3.5.0",
+		"wdio-obsidian-service": "^3.5.0",
+		"webdriverio": "^9.33.1"
+	}
+}

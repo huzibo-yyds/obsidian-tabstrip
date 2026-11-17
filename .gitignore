@@ -1,0 +1,35 @@
+# editors
+.vscode
+.idea
+*.iml
+
+# npm
+node_modules
+
+# Build output: main.js is attached to GitHub releases, not committed.
+/main.js
+*.map
+
+# Obsidian plugin data
+data.json
+
+# Test runs and caches
+.obsidian-cache/
+.e2e-state/
+coverage/
+logs/
+*.log
+
+# Private or copied test fixtures (themes copied from a real vault, research material)
+test/themes/
+test/private/
+tabstrip-research/
+
+# macOS
+.DS_Store
+
+# Spike build output
+spikes/*/plugin/main.js
+
+# Per-machine settings (main vault path for the host guard and theme copies)
+.tabstrip-local.json

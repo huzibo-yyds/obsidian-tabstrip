@@ -1,0 +1,10 @@
+{
+	"id": "tabstrip",
+	"name": "Tabstrip",
+	"version": "0.2.0",
+	"minAppVersion": "1.13.0",
+	"description": "Group tabs into named, colored, collapsible groups like browser tab groups, with an optional vertical tab strip.",
+	"author": "huzibo-yyds",
+	"authorUrl": "https://github.com/huzibo-yyds",
+	"isDesktopOnly": true
+}

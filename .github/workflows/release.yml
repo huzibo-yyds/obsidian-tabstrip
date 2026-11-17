@@ -1,0 +1,50 @@
+# Builds a release when a version tag is pushed (official Obsidian sample plugin style).
+# The tag must be the plain version from manifest.json, for example 0.2.0 (no "v" prefix).
+# The release is created as a draft: check it and publish it by hand.
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Check that the tag matches the version
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          manifest_version="$(node -p "require('./manifest.json').version")"
+          package_version="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$manifest_version" ] || [ "$tag" != "$package_version" ]; then
+            echo "Tag $tag does not match manifest.json ($manifest_version) and package.json ($package_version)." >&2
+            exit 1
+          fi
+          node -e "const v=require('./versions.json'); if (!v['$tag']) { console.error('versions.json has no entry for $tag'); process.exit(1); }"
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          gh release create "$tag" \
+            --title "$tag" \
+            --draft \
+            --notes "See CHANGELOG.md for the release notes." \
+            main.js manifest.json styles.css

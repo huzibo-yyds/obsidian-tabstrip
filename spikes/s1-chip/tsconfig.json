@@ -1,0 +1,7 @@
+{
+	"extends": "../../test/e2e/tsconfig.json",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true
+	},
+	"include": ["./*.e2e.ts", "./wdio.conf.mts", "./build.mjs"]
+}

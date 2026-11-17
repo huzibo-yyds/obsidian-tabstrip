@@ -1,0 +1,9 @@
+{
+	"id": "e2e-startup-log-probe",
+	"name": "E2E startup log probe",
+	"version": "0.0.1",
+	"minAppVersion": "1.0.0",
+	"description": "Test-only. Logs one info and one error message while it loads, to prove the e2e run captures console output from plugin startup.",
+	"author": "huzibo-yyds",
+	"isDesktopOnly": true
+}

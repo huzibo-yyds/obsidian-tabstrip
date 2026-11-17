@@ -1,0 +1,55 @@
+/*
+ * Spike S1 (throwaway). Group chip in the first member tab's inline-start margin.
+ * The plugin writes only --tabstrip-chip-slot (the measured chip width plus gaps) on the header.
+ */
+
+/* Chrome group colors mapped to Obsidian color variables (requirements 7.2). */
+.tabstrip-color-grey { --tabstrip-group-color: var(--color-base-50); }
+.tabstrip-color-blue { --tabstrip-group-color: var(--color-blue); }
+.tabstrip-color-red { --tabstrip-group-color: var(--color-red); }
+.tabstrip-color-yellow { --tabstrip-group-color: var(--color-yellow); }
+.tabstrip-color-green { --tabstrip-group-color: var(--color-green); }
+.tabstrip-color-pink { --tabstrip-group-color: var(--color-pink); }
+.tabstrip-color-purple { --tabstrip-group-color: var(--color-purple); }
+.tabstrip-color-cyan { --tabstrip-group-color: var(--color-cyan); }
+.tabstrip-color-orange { --tabstrip-group-color: var(--color-orange); }
+
+/* Room for the chip, outside the tab's own box. */
+.workspace .mod-root .workspace-tab-header.tabstrip-has-chip {
+	margin-inline-start: var(--tabstrip-chip-slot, 0px);
+}
+
+/* The chip sits just before the header's start edge (the header is position: relative). */
+.workspace .mod-root .workspace-tab-header > .tabstrip-chip {
+	position: absolute;
+	inset-inline-end: calc(100% + 3px);
+	top: 4px;
+	bottom: 7px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	max-width: 12em;
+	padding: 0 8px;
+	border-radius: var(--radius-s);
+	background-color: var(--tabstrip-group-color);
+	color: var(--text-on-accent);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	line-height: 1;
+	white-space: nowrap;
+	cursor: var(--cursor);
+	user-select: none;
+	/* In a frameless window the strip is a window-drag region; the chip must stay clickable. */
+	-webkit-app-region: no-drag;
+}
+
+.workspace .mod-root .workspace-tab-header > .tabstrip-chip > .tabstrip-chip-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Member tabs: a line in the group color under the tab. */
+.workspace .mod-root .workspace-tab-header.tabstrip-member .workspace-tab-header-inner {
+	box-shadow: inset 0 -2px 0 0 var(--tabstrip-group-color);
+}

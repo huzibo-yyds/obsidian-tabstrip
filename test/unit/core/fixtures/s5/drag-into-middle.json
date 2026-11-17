@@ -1,0 +1,1009 @@
+{
+	"name": "drag-into-middle",
+	"what": "n6 dropped on the right half of n3 (G = n2 n3 n4)",
+	"obsidian": "1.15.0",
+	"events": [
+		{
+			"detail": "80e4a5d19aaa1d0f",
+			"t": 50309.40000000596,
+			"type": "dragstart@main"
+		},
+		{
+			"detail": "db571622842fa650",
+			"t": 50422.59999999404,
+			"type": "dragenter@main"
+		},
+		{
+			"detail": "db571622842fa650",
+			"t": 50428.40000000596,
+			"type": "dragoverx4"
+		},
+		{
+			"detail": "db571622842fa650",
+			"t": 50560.80000001192,
+			"type": "drop@main"
+		},
+		{
+			"detail": "80e4a5d19aaa1d0f",
+			"t": 50572.80000001192,
+			"type": "dragend@main"
+		},
+		{
+			"t": 50585,
+			"type": "layout-change"
+		}
+	],
+	"passes": [
+		{
+			"after": {
+				"groups": [
+					{
+						"collapsed": false,
+						"color": "blue",
+						"id": "g22",
+						"name": "S5"
+					}
+				],
+				"members": [
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupId": "g22",
+						"leafId": "1e8035c3afcd6944"
+					},
+					{
+						"fingerprint": {
+							"path": "归档/计划.md",
+							"viewType": "markdown"
+						},
+						"groupId": "g22",
+						"leafId": "80e4a5d19aaa1d0f"
+					},
+					{
+						"fingerprint": {
+							"path": "项目/计划.md",
+							"viewType": "markdown"
+						},
+						"groupId": "g22",
+						"leafId": "9580fe11dcd63621"
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupId": "g22",
+						"leafId": "db571622842fa650"
+					}
+				],
+				"nextGroupSeq": 23,
+				"tombstones": [
+					{
+						"fingerprint": {
+							"path": "notes with spaces/a b c.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "yellow",
+						"groupId": "g21",
+						"groupName": "P3",
+						"indexInGroup": 0,
+						"leafId": "e59eb29b2ee2ea24",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "中文 English 混合 note.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "yellow",
+						"groupId": "g21",
+						"groupName": "P3",
+						"indexInGroup": 0,
+						"leafId": "fed39243e8a4fdd2",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "读书笔记：深度学习.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "yellow",
+						"groupId": "g21",
+						"groupName": "P3",
+						"indexInGroup": 0,
+						"leafId": "d2bf557633dae073",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "项目/计划.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "red",
+						"groupId": "g20",
+						"groupName": "P2",
+						"indexInGroup": 0,
+						"leafId": "1ec745e8377daee3",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "red",
+						"groupId": "g20",
+						"groupName": "P2",
+						"indexInGroup": 0,
+						"leafId": "5bd4d27423ce6732",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "red",
+						"groupId": "g20",
+						"groupName": "P2",
+						"indexInGroup": 0,
+						"leafId": "c967f9bb37736084",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "中文 English 混合 note.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "blue",
+						"groupId": "g19",
+						"groupName": "P1",
+						"indexInGroup": 0,
+						"leafId": "ea37bee92fba25b9",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "读书笔记：深度学习.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "blue",
+						"groupId": "g19",
+						"groupName": "P1",
+						"indexInGroup": 0,
+						"leafId": "cdae6c6d7117c71e",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "归档/计划.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "blue",
+						"groupId": "g19",
+						"groupName": "P1",
+						"indexInGroup": 0,
+						"leafId": "7597899b9f399d42",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g18",
+						"groupName": "P0",
+						"indexInGroup": 0,
+						"leafId": "6ca73c9adfe83c51",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g18",
+						"groupName": "P0",
+						"indexInGroup": 0,
+						"leafId": "cc3dbcfb927c3b0d",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "Getting Started.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g18",
+						"groupName": "P0",
+						"indexInGroup": 0,
+						"leafId": "d1fccc7f6d0dc4a5",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "Inbox.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "green",
+						"groupId": "g17",
+						"groupName": "",
+						"indexInGroup": 0,
+						"leafId": "ae710113abb20a9a",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "项目/计划.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "green",
+						"groupId": "g17",
+						"groupName": "",
+						"indexInGroup": 0,
+						"leafId": "be81590ac641426f",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "blue",
+						"groupId": "g16",
+						"groupName": "Research 研究",
+						"indexInGroup": 1,
+						"leafId": "2e147b19f2f4435e",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "pink",
+						"groupId": "g15",
+						"groupName": "Late",
+						"indexInGroup": 1,
+						"leafId": "a439dba69785d79f",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "项目/计划.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g14",
+						"groupName": "Pins",
+						"indexInGroup": 0,
+						"leafId": "9a9c66601f2c1f65",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g14",
+						"groupName": "Pins",
+						"indexInGroup": 0,
+						"leafId": "f8e9bb8d959d73eb",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g14",
+						"groupName": "Pins",
+						"indexInGroup": 0,
+						"leafId": "15f76dbb17563128",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "orange",
+						"groupId": "g13",
+						"groupName": "Esc",
+						"indexInGroup": 0,
+						"leafId": "e4809d2542e9b462",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "orange",
+						"groupId": "g13",
+						"groupName": "Esc",
+						"indexInGroup": 0,
+						"leafId": "383a188381d2a371",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "Daily/2026-11-08.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "cyan",
+						"groupId": "g12",
+						"groupName": "Pop 弹出",
+						"indexInGroup": 0,
+						"leafId": "4c649fae8a63828b",
+						"left": null,
+						"paneId": null,
+						"paneIndex": 0,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "notes with spaces/a b c.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "cyan",
+						"groupId": "g12",
+						"groupName": "Pop 弹出",
+						"indexInGroup": 0,
+						"leafId": "c2d4fc7bff2d39af",
+						"left": null,
+						"paneId": null,
+						"paneIndex": 0,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "cyan",
+						"groupId": "g12",
+						"groupName": "Pop 弹出",
+						"indexInGroup": 0,
+						"leafId": "21ef7fbcc8f6fb11",
+						"left": null,
+						"paneId": null,
+						"paneIndex": 0,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "notes with spaces/a b c.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "green",
+						"groupId": "g10",
+						"groupName": "Right 右",
+						"indexInGroup": 0,
+						"leafId": "c0a1cc3b821f2120",
+						"left": null,
+						"paneId": null,
+						"paneIndex": 0,
+						"right": null
+					}
+				]
+			},
+			"at": 50585.20000001788,
+			"before": {
+				"groups": [
+					{
+						"collapsed": false,
+						"color": "blue",
+						"id": "g22",
+						"name": "S5"
+					}
+				],
+				"members": [
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupId": "g22",
+						"leafId": "1e8035c3afcd6944"
+					},
+					{
+						"fingerprint": {
+							"path": "项目/计划.md",
+							"viewType": "markdown"
+						},
+						"groupId": "g22",
+						"leafId": "9580fe11dcd63621"
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupId": "g22",
+						"leafId": "db571622842fa650"
+					}
+				],
+				"nextGroupSeq": 23,
+				"tombstones": [
+					{
+						"fingerprint": {
+							"path": "notes with spaces/a b c.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "yellow",
+						"groupId": "g21",
+						"groupName": "P3",
+						"indexInGroup": 0,
+						"leafId": "e59eb29b2ee2ea24",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "中文 English 混合 note.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "yellow",
+						"groupId": "g21",
+						"groupName": "P3",
+						"indexInGroup": 0,
+						"leafId": "fed39243e8a4fdd2",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "读书笔记：深度学习.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "yellow",
+						"groupId": "g21",
+						"groupName": "P3",
+						"indexInGroup": 0,
+						"leafId": "d2bf557633dae073",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "项目/计划.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "red",
+						"groupId": "g20",
+						"groupName": "P2",
+						"indexInGroup": 0,
+						"leafId": "1ec745e8377daee3",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "red",
+						"groupId": "g20",
+						"groupName": "P2",
+						"indexInGroup": 0,
+						"leafId": "5bd4d27423ce6732",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "red",
+						"groupId": "g20",
+						"groupName": "P2",
+						"indexInGroup": 0,
+						"leafId": "c967f9bb37736084",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "中文 English 混合 note.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "blue",
+						"groupId": "g19",
+						"groupName": "P1",
+						"indexInGroup": 0,
+						"leafId": "ea37bee92fba25b9",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "读书笔记：深度学习.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "blue",
+						"groupId": "g19",
+						"groupName": "P1",
+						"indexInGroup": 0,
+						"leafId": "cdae6c6d7117c71e",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "归档/计划.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "blue",
+						"groupId": "g19",
+						"groupName": "P1",
+						"indexInGroup": 0,
+						"leafId": "7597899b9f399d42",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g18",
+						"groupName": "P0",
+						"indexInGroup": 0,
+						"leafId": "6ca73c9adfe83c51",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g18",
+						"groupName": "P0",
+						"indexInGroup": 0,
+						"leafId": "cc3dbcfb927c3b0d",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "Getting Started.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g18",
+						"groupName": "P0",
+						"indexInGroup": 0,
+						"leafId": "d1fccc7f6d0dc4a5",
+						"left": "9c197cd51e80a2e9",
+						"paneId": "p8",
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "Inbox.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "green",
+						"groupId": "g17",
+						"groupName": "",
+						"indexInGroup": 0,
+						"leafId": "ae710113abb20a9a",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "项目/计划.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "green",
+						"groupId": "g17",
+						"groupName": "",
+						"indexInGroup": 0,
+						"leafId": "be81590ac641426f",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "blue",
+						"groupId": "g16",
+						"groupName": "Research 研究",
+						"indexInGroup": 1,
+						"leafId": "2e147b19f2f4435e",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "pink",
+						"groupId": "g15",
+						"groupName": "Late",
+						"indexInGroup": 1,
+						"leafId": "a439dba69785d79f",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "项目/计划.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g14",
+						"groupName": "Pins",
+						"indexInGroup": 0,
+						"leafId": "9a9c66601f2c1f65",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g14",
+						"groupName": "Pins",
+						"indexInGroup": 0,
+						"leafId": "f8e9bb8d959d73eb",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "grey",
+						"groupId": "g14",
+						"groupName": "Pins",
+						"indexInGroup": 0,
+						"leafId": "15f76dbb17563128",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "会议记录（2026-11-08）.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "orange",
+						"groupId": "g13",
+						"groupName": "Esc",
+						"indexInGroup": 0,
+						"leafId": "e4809d2542e9b462",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "orange",
+						"groupId": "g13",
+						"groupName": "Esc",
+						"indexInGroup": 0,
+						"leafId": "383a188381d2a371",
+						"left": "9c197cd51e80a2e9",
+						"paneId": null,
+						"paneIndex": 1,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "Daily/2026-11-08.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "cyan",
+						"groupId": "g12",
+						"groupName": "Pop 弹出",
+						"indexInGroup": 0,
+						"leafId": "4c649fae8a63828b",
+						"left": null,
+						"paneId": null,
+						"paneIndex": 0,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "notes with spaces/a b c.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "cyan",
+						"groupId": "g12",
+						"groupName": "Pop 弹出",
+						"indexInGroup": 0,
+						"leafId": "c2d4fc7bff2d39af",
+						"left": null,
+						"paneId": null,
+						"paneIndex": 0,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "欢迎.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "cyan",
+						"groupId": "g12",
+						"groupName": "Pop 弹出",
+						"indexInGroup": 0,
+						"leafId": "21ef7fbcc8f6fb11",
+						"left": null,
+						"paneId": null,
+						"paneIndex": 0,
+						"right": null
+					},
+					{
+						"fingerprint": {
+							"path": "notes with spaces/a b c.md",
+							"viewType": "markdown"
+						},
+						"groupColor": "green",
+						"groupId": "g10",
+						"groupName": "Right 右",
+						"indexInGroup": 0,
+						"leafId": "c0a1cc3b821f2120",
+						"left": null,
+						"paneId": null,
+						"paneIndex": 0,
+						"right": null
+					}
+				]
+			},
+			"ctx": {
+				"dropIntent": {
+					"joinGroupId": "g22",
+					"leafId": "80e4a5d19aaa1d0f"
+				}
+			},
+			"next": {
+				"activeLeafId": "80e4a5d19aaa1d0f",
+				"panes": [
+					{
+						"currentLeafId": "80e4a5d19aaa1d0f",
+						"id": "p8",
+						"kind": "main",
+						"leaves": [
+							{
+								"fingerprint": {
+									"path": "Getting Started.md",
+									"viewType": "markdown"
+								},
+								"id": "9c197cd51e80a2e9",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "欢迎.md",
+									"viewType": "markdown"
+								},
+								"id": "1e8035c3afcd6944",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "会议记录（2026-11-08）.md",
+									"viewType": "markdown"
+								},
+								"id": "db571622842fa650",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "归档/计划.md",
+									"viewType": "markdown"
+								},
+								"id": "80e4a5d19aaa1d0f",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "项目/计划.md",
+									"viewType": "markdown"
+								},
+								"id": "9580fe11dcd63621",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "Inbox.md",
+									"viewType": "markdown"
+								},
+								"id": "a7d50050df46aa5d",
+								"pinned": false
+							}
+						],
+						"windowId": "w0"
+					}
+				]
+			},
+			"ops": [],
+			"prev": {
+				"activeLeafId": "80e4a5d19aaa1d0f",
+				"panes": [
+					{
+						"currentLeafId": "80e4a5d19aaa1d0f",
+						"id": "p8",
+						"kind": "main",
+						"leaves": [
+							{
+								"fingerprint": {
+									"path": "Getting Started.md",
+									"viewType": "markdown"
+								},
+								"id": "9c197cd51e80a2e9",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "欢迎.md",
+									"viewType": "markdown"
+								},
+								"id": "1e8035c3afcd6944",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "会议记录（2026-11-08）.md",
+									"viewType": "markdown"
+								},
+								"id": "db571622842fa650",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "项目/计划.md",
+									"viewType": "markdown"
+								},
+								"id": "9580fe11dcd63621",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "Inbox.md",
+									"viewType": "markdown"
+								},
+								"id": "a7d50050df46aa5d",
+								"pinned": false
+							},
+							{
+								"fingerprint": {
+									"path": "归档/计划.md",
+									"viewType": "markdown"
+								},
+								"id": "80e4a5d19aaa1d0f",
+								"pinned": false
+							}
+						],
+						"windowId": "w0"
+					}
+				]
+			},
+			"triggers": [
+				"layout"
+			]
+		}
+	]
+}
